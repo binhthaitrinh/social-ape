@@ -6,7 +6,13 @@ const express = require('express');
 const app = express();
 
 const { getAllScreams, postOneScream } = require('./handlers/scream');
-const { signup, login, uploadImage } = require('./handlers/user');
+const {
+  signup,
+  login,
+  uploadImage,
+  addUserDetails,
+  getAuthenticatedUser
+} = require('./handlers/user');
 
 const FBAuth = require('./util/fbAuth');
 
@@ -41,6 +47,9 @@ app.post(
 );
 
 app.post('/user/image', FBAuth, uploadImage);
+
+app.post('/user', FBAuth, addUserDetails);
+app.get('/user', FBAuth, getAuthenticatedUser);
 
 exports.api = functions.https.onRequest(app);
 // exports.api = functions.region('europe-west1').https.onRequest(app);

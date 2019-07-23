@@ -8,6 +8,8 @@ firebase.initializeApp(config);
 
 const { validationResult } = require('express-validator');
 
+const { reduceUserDetails } = require('../util/validators');
+
 exports.signup = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -87,6 +89,49 @@ exports.login = async (req, res) => {
   }
 };
 
+// Add user details
+exports.addUserDetails = (req, res) => {
+  let userDetails = reduceUserDetails(req.body);
+
+  db.doc(`/users/${req.user.handle}`)
+    .update(userDetails)
+    .then(() => {
+      return res.json({ message: 'Details added successfully' });
+    })
+    .catch(err => {
+      console.err(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
+// Get All user details
+exports.getAuthenticatedUser = (req, res) => {
+  let userData = {};
+  db.doc(`/users/${req.user.handle}`)
+    .get()
+    .then(doc => {
+      if (doc.exists) {
+        userData.credentials = doc.data();
+        return db
+          .collection('likes')
+          .where('userHandle', '==', req.user.handle)
+          .get();
+      }
+    })
+    .then(data => {
+      userData.likes = [];
+      data.forEach(doc => {
+        userData.likes.push(doc.data());
+      });
+      return res.json(userData);
+    })
+    .catch(err => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
+// upload profile image for user
 exports.uploadImage = (req, res) => {
   const BusBoy = require('busboy');
   const path = require('path');
