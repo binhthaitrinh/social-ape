@@ -27,41 +27,70 @@ firebase.initializeApp(firebaseConfig);
 
 const db = admin.firestore();
 
-app.get('/screams', (req, res) => {
-  db.collection('screams')
-    .orderBy('createdAt', 'desc')
-    .get()
-    .then(data => {
-      let screams = [];
-      data.forEach(doc => {
-        screams.push({
-          screamId: doc.id,
-          body: doc.data().body,
-          userHandle: doc.data().userHandle,
-          createdAt: doc.data().createdAt
-        });
+app.get('/screams', async (req, res) => {
+  try {
+    const result = await db
+      .collection('screams')
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    let screams = [];
+    result.forEach(scream => {
+      screams.push({
+        screamId: scream.id,
+        body: scream.data().body,
+        userHandle: scream.data().userHandle,
+        createdAt: scream.data().createdAt
       });
-      return res.json(screams);
-    })
-    .catch(err => console.log(err));
+    });
+
+    return res.json(screams);
+  } catch (err) {
+    console.error(err);
+  }
 });
 
-app.post('/scream', (req, res) => {
+const FBAuth = async (req, res, next) => {
+  let idToken;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer ')
+  ) {
+    idToken = req.headers.authorization.split('Bearer ')[1];
+  } else {
+    console.error('No token found');
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = decodedToken;
+    const abc = await db
+      .collection('users')
+      .where('userId', '==', req.user.uid)
+      .limit(1)
+      .get();
+    req.user.handle = abc.docs[0].data().handle;
+    return next();
+  } catch (err) {
+    console.error(err);
+    return res.status(403).json(err);
+  }
+};
+
+app.post('/scream', FBAuth, async (req, res) => {
   const newScream = {
     body: req.body.body,
-    userHandle: req.body.userHandle,
+    userHandle: req.user.handle,
     createdAt: new Date().toISOString()
   };
-
-  db.collection('screams')
-    .add(newScream)
-    .then(doc => {
-      res.json({ message: `document ${doc.id} created successfully` });
-    })
-    .catch(err => {
-      res.status(500).json({ error: `something went wrong` });
-      console.error(err);
-    });
+  try {
+    const doc = await db.collection('screams').add(newScream);
+    return res.json({ message: `document ${doc.id} created` });
+  } catch (err) {
+    res.status(500).json({ error: `something went wrong` });
+    console.error(err);
+  }
 });
 
 // Signup route
@@ -76,7 +105,7 @@ app.post(
       .not()
       .isEmpty()
   ],
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -92,43 +121,33 @@ app.post(
 
     let token, userId;
 
-    db.doc(`/users/${newUser.handle}`)
-      .get()
-      .then(doc => {
-        if (doc.exists) {
-          return res
-            .status(400)
-            .json({ handle: 'this handle is already taken' });
-        } else {
-          return firebase
-            .auth()
-            .createUserWithEmailAndPassword(newUser.email, newUser.password);
-        }
-      })
-      .then(data => {
-        userId = data.user.uid;
-        return data.user.getIdToken();
-      })
-      .then(idToken => {
-        token = idToken;
-        const userCredentials = {
-          handle: newUser.handle,
-          email: newUser.email,
-          createdAt: new Date().toISOString(),
-          userId: userId
-        };
-        return db.doc(`users/${newUser.handle}`).set(userCredentials);
-      })
-      .then(() => {
-        return res.status(201).json({ token });
-      })
-      .catch(err => {
-        console.error(err);
-        if (err.code === 'auth/email-already-in-use') {
-          return res.status(400).json({ email: 'Email is already in use' });
-        }
-        return res.status(500).json({ error: err.code });
-      });
+    try {
+      const doc = await db.doc(`/users/${newUser.handle}`).get();
+      if (doc.exists) {
+        return res.status(400).json({ handle: 'this handle is already taken' });
+      }
+
+      const data = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(newUser.email, newUser.password);
+      userId = data.user.uid;
+      token = await data.user.getIdToken();
+
+      const userCredentials = {
+        handle: newUser.handle,
+        email: newUser.email,
+        createdAt: new Date().toISOString(),
+        userId: userId
+      };
+      await db.doc(`users/${newUser.handle}`).set(userCredentials);
+      return res.status(201).json({ token });
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'auth/email-already-in-use') {
+        return res.status(400).json({ email: 'Email is already in use' });
+      }
+      return res.status(500).json({ error: err.code });
+    }
   }
 );
 
@@ -140,7 +159,7 @@ app.post(
       .not()
       .isEmpty()
   ],
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -151,24 +170,21 @@ app.post(
       password: req.body.password
     };
 
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(user.email, user.password)
-      .then(data => {
-        return data.user.getIdToken();
-      })
-      .then(token => {
-        return res.json({ token });
-      })
-      .catch(err => {
-        console.error(err);
-        if (err.code === 'auth/wrong-password') {
-          return res
-            .status(403)
-            .json({ general: 'Wrong credentials, please try again' });
-        }
-        return res.status(500).json({ error: err.code });
-      });
+    try {
+      const data = await firebase
+        .auth()
+        .signInWithEmailAndPassword(user.email, user.password);
+      const token = await data.user.getIdToken();
+      return res.json({ token });
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'auth/wrong-password') {
+        return res
+          .status(403)
+          .json({ general: 'Wrong credentials, please try again' });
+      }
+      return res.status(500).json({ error: err.code });
+    }
   }
 );
 
