@@ -5,7 +5,12 @@ const { check } = require('express-validator');
 const express = require('express');
 const app = express();
 
-const { getAllScreams, postOneScream } = require('./handlers/scream');
+const {
+  getAllScreams,
+  postOneScream,
+  getScream,
+  commentOnScream
+} = require('./handlers/scream');
 const {
   signup,
   login,
@@ -19,6 +24,12 @@ const FBAuth = require('./util/fbAuth');
 // Scream route
 app.get('/screams', getAllScreams);
 app.post('/scream', FBAuth, postOneScream);
+app.get('/scream/:screamId', getScream);
+app.post('/scream/:screamId/comment', FBAuth, commentOnScream);
+// TODO delete scream
+// TODO like a scream
+// TODO unlike a scream
+// TODO comment on scream
 
 // Users route
 app.post(

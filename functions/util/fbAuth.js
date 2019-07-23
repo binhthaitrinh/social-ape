@@ -22,6 +22,7 @@ module.exports = async (req, res, next) => {
       .get();
 
     req.user.handle = abc.docs[0].data().handle;
+    req.user.imageUrl = abc.docs[0].data().imageUrl;
     return next();
   } catch (err) {
     console.error(err);
