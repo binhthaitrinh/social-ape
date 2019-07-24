@@ -14,9 +14,9 @@ exports.getAllScreams = async (req, res) => {
         body: scream.data().body,
         userHandle: scream.data().userHandle,
         createdAt: scream.data().createdAt,
-        commentCount: doc.data().commentCount,
-        likeCount: doc.data().likeCount,
-        userImage: doc.data().userImage
+        commentCount: scream.data().commentCount,
+        likeCount: scream.data().likeCount,
+        userImage: scream.data().userImage
       });
     });
 
