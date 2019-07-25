@@ -15,7 +15,6 @@ export class home extends Component {
     axios
       .get('/screams')
       .then(res => {
-        console.log(res.data);
         this.setState({
           screams: res.data
         });
