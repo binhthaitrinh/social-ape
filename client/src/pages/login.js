@@ -59,6 +59,7 @@ export class login extends Component {
     axios
       .post('/login', userData)
       .then(res => {
+        localStorage.setItem('FBIdToken', `Bearer ${res.data.token}`);
         this.setState({ loading: false });
         this.props.history.push('/');
       })
