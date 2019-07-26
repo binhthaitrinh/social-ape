@@ -3,7 +3,8 @@ import {
   SET_ERRORS,
   CLEAR_ERRORS,
   LOADING_UI,
-  SET_UNANTHENTICATED
+  SET_UNANTHENTICATED,
+  LOADING_USER
 } from '../types';
 import axios from 'axios';
 
@@ -28,6 +29,7 @@ export const loginUser = (userData, history) => dispatch => {
 };
 
 export const getUserData = () => dispatch => {
+  dispatch({ type: LOADING_USER });
   axios
     .get('/user')
     .then(res => {
