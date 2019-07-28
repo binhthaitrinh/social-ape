@@ -9,7 +9,8 @@ import {
   LOADING_UI,
   POST_SCREAM,
   SET_SCREAM,
-  STOP_LOADING_UI
+  STOP_LOADING_UI,
+  SUBMIT_COMMENT
 } from '../types';
 import axios from 'axios';
 
@@ -84,7 +85,7 @@ export const postScream = newScream => dispatch => {
         type: POST_SCREAM,
         payload: res.data
       });
-      dispatch({ type: CLEAR_ERRORS });
+      dispatch(clearErrors());
     })
     .catch(err => {
       dispatch({
@@ -112,4 +113,22 @@ export const getScream = screamId => dispatch => {
       dispatch({ type: STOP_LOADING_UI });
     })
     .catch(err => console.log(err));
+};
+
+export const submitComment = (screamId, commentData) => dispatch => {
+  axios
+    .post(`/scream/${screamId}/comment`, commentData)
+    .then(res => {
+      dispatch({
+        type: SUBMIT_COMMENT,
+        payload: res.data
+      });
+      dispatch(clearErrors());
+    })
+    .catch(err => {
+      dispatch({
+        type: SET_ERRORS,
+        payload: err.response.data
+      });
+    });
 };
