@@ -17,7 +17,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 
-import { postScream } from '../redux/actions/dataAction';
+import { postScream, clearErrors } from '../redux/actions/dataAction';
 
 const styles = {
   textField: {
@@ -34,15 +34,17 @@ const styles = {
     position: 'absolute'
   },
   submitButton: {
-    position: 'relative'
+    position: 'relative',
+    float: 'right',
+    marginTop: 10
   },
   progressSpinner: {
     position: 'absolute'
   },
   closeButton: {
     position: 'absolute',
-    left: '90%',
-    top: '10%'
+    left: '91%',
+    top: '6%'
   }
 };
 
@@ -58,7 +60,7 @@ class PostScream extends Component {
       this.setState({ errors: nextProps.UI.errors });
     }
     if (!nextProps.UI.errors && !nextProps.UI.loading) {
-      this.setState({ body: '', open: false });
+      this.setState({ body: '', open: false, errors: {} });
     }
   }
 
@@ -70,8 +72,10 @@ class PostScream extends Component {
 
   handleClose = () => {
     this.setState({
-      open: false
+      open: false,
+      errors: {}
     });
+    this.props.clearErrors();
   };
 
   handleChange = e => {
@@ -146,7 +150,8 @@ class PostScream extends Component {
 
 PostScream.propTypes = {
   postScream: PropTypes.func.isRequired,
-  UI: PropTypes.object.isRequired
+  UI: PropTypes.object.isRequired,
+  clearErrors: PropTypes.func.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -155,5 +160,5 @@ const mapStateToProps = state => ({
 
 export default connect(
   mapStateToProps,
-  { postScream }
+  { postScream, clearErrors }
 )(withStyles(styles)(PostScream));
