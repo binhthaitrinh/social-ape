@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import withStyles from '@material-ui/core/styles/withStyles';
 
 import { connect } from 'react-redux';
-import { editUserDetails } from '../redux/actions/userAction';
+import { editUserDetails } from '../../redux/actions/userAction';
 
-import MyButton from '../util/MyButton';
+import MyButton from '../../util/MyButton';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -17,7 +17,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 
-import { postScream, clearErrors } from '../redux/actions/dataAction';
+import { postScream, clearErrors } from '../../redux/actions/dataAction';
 
 const styles = {
   textField: {

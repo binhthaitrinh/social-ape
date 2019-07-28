@@ -9,7 +9,7 @@ import EditDetails from './EditDetails';
 // MUI stuff
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
-import theme from '../util/theme';
+import theme from '../../util/theme';
 import MuiLink from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -22,9 +22,9 @@ import LinkIcon from '@material-ui/icons/Link';
 import CalendarToday from '@material-ui/icons/CalendarToday';
 import KeyboardReturn from '@material-ui/icons/KeyboardReturn';
 
-import MyButton from '../util/MyButton';
+import MyButton from '../../util/MyButton';
 
-import { logoutUser, uploadImage } from '../redux/actions/userAction';
+import { logoutUser, uploadImage } from '../../redux/actions/userAction';
 
 const styles = {
   paper: {
