@@ -23,6 +23,9 @@ import themeFile from './util/theme';
 import AuthRoute from './util/AuthRoute';
 import axios from 'axios';
 
+axios.defaults.baseURL =
+  'https://us-central1-social-ape-c1875.cloudfunctions.net/api';
+
 const theme = createMuiTheme(themeFile);
 
 const token = localStorage.FBIdToken;

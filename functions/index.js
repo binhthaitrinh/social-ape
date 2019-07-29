@@ -6,6 +6,9 @@ const express = require('express');
 const app = express();
 
 const { db } = require('./util/admin');
+const cors = require('cors');
+
+app.use(cors({ origin: true }));
 
 const {
   getAllScreams,
