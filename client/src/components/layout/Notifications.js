@@ -56,7 +56,7 @@ class Notifications extends Component {
               badgeContent={
                 notifications.filter(noti => noti.read === false).length
               }
-              color="seconday">
+              color="secondary">
               <NotificationsIcon />
             </Badge>
           ))
@@ -123,7 +123,7 @@ class Notifications extends Component {
 
 Notifications.propTypes = {
   markNotificationRead: PropTypes.func.isRequired,
-  notifications: PropTypes.object.isRequired
+  notifications: PropTypes.array.isRequired
 };
 
 const mapStateToProps = state => ({
